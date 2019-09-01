@@ -232,7 +232,7 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
     double dT = 1 / frameRate;
     TTC = -dT / (1 - medDistRatio);
     
-    bool fPrint = true;
+    bool fPrint = false;
     if (fPrint)
     {
         std::cout << "Camera TTC = " << TTC << "s.\n";
@@ -304,7 +304,7 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
     // compute TTC from both measurements
     TTC = minXCurr * dT / (minXPrev - minXCurr);
 
-    bool fPrint = true;
+    bool fPrint = false;
     if (fPrint)
     {
         std::cout << "Lidar TTC = " << TTC << "s.\n";
