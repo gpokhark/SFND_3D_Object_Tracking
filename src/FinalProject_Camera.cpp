@@ -73,11 +73,18 @@ int main(int argc, const char *argv[])
     int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
+    bool fPrint = false;          // visualize print statements
 
     /* MAIN LOOP OVER ALL IMAGES */
 
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex+=imgStepWidth)
     {
+        fPrint = false;
+        if (fPrint)
+        {
+            std::cout << " Image Frame = " << imgIndex << ".\n";
+        }
+        fPrint = false;
         /* LOAD IMAGE INTO BUFFER */
 
         // assemble filenames for current index
@@ -93,18 +100,28 @@ int main(int argc, const char *argv[])
         frame.cameraImg = img;
         dataBuffer.push_back(frame);
 
-        cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
+        fPrint = false;
+        if (fPrint)
+        {
+            std::cout << "#1 : LOAD IMAGE INTO BUFFER done" << std::endl;
+        }
+        fPrint = false;
 
 
         /* DETECT & CLASSIFY OBJECTS */
-        bVis = false;
+        bVis = true;
         float confThreshold = 0.2;
         float nmsThreshold = 0.4;        
         detectObjects((dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->boundingBoxes, confThreshold, nmsThreshold,
                       yoloBasePath, yoloClassesFile, yoloModelConfiguration, yoloModelWeights, bVis);
-
-        cout << "#2 : DETECT & CLASSIFY OBJECTS done" << endl;
+       
+        fPrint = false;
+        if (fPrint)
+        {
+            std::cout << "#2 : DETECT & CLASSIFY OBJECTS done" << std::endl;
+        }
         bVis = false;
+        fPrint = false;
 
         /* CROP LIDAR POINTS */
 
@@ -118,8 +135,12 @@ int main(int argc, const char *argv[])
         cropLidarPoints(lidarPoints, minX, maxX, maxY, minZ, maxZ, minR);
     
         (dataBuffer.end() - 1)->lidarPoints = lidarPoints;
-
-        cout << "#3 : CROP LIDAR POINTS done" << endl;
+        fPrint = false;
+        if (fPrint)
+        {
+            std::cout << "#3 : CROP LIDAR POINTS done" << std::endl;
+        }
+        fPrint = false;
 
 
         /* CLUSTER LIDAR POINT CLOUD */
@@ -136,8 +157,13 @@ int main(int argc, const char *argv[])
         }
         bVis = false;
 
-        cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
-        
+        fPrint = false;
+        if (fPrint)
+        {
+            std::cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << std::endl;
+        }
+        fPrint = false; 
+
         
         // REMOVE THIS LINE BEFORE PROCEEDING WITH THE FINAL PROJECT
         // continue; // skips directly to the next image without processing what comes beneath
@@ -185,8 +211,12 @@ int main(int argc, const char *argv[])
 
         // push keypoints and descriptor for current frame to end of data buffer
         (dataBuffer.end() - 1)->keypoints = keypoints;
-
-        cout << "#5 : DETECT KEYPOINTS done" << endl;
+        fPrint = false;
+        if (fPrint)
+        {
+            std::cout << "#5 : DETECT KEYPOINTS done" << std::endl;
+        }
+        fPrint = false;
 
 
         /* EXTRACT KEYPOINT DESCRIPTORS */
@@ -197,9 +227,13 @@ int main(int argc, const char *argv[])
 
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
-
-        cout << "#6 : EXTRACT DESCRIPTORS done" << endl;
-
+        
+        fPrint = false;
+        if (fPrint)
+        {
+            std::cout << "#6 : EXTRACT DESCRIPTORS done" << std::endl;
+        }
+        fPrint = false;
 
         if (dataBuffer.size() > 1) // wait until at least two images have been processed
         {
@@ -217,8 +251,13 @@ int main(int argc, const char *argv[])
 
             // store matches in current data frame
             (dataBuffer.end() - 1)->kptMatches = matches;
-
-            cout << "#7 : MATCH KEYPOINT DESCRIPTORS done" << endl;
+            
+            fPrint = false;
+            if (fPrint)
+            {
+                std::cout << "#7 : MATCH KEYPOINT DESCRIPTORS done" << std::endl;
+            }
+            fPrint = false;
 
             // visualize matches between current and previous image
             bVis = false;
@@ -250,8 +289,13 @@ int main(int argc, const char *argv[])
 
             // store matches in current data frame
             (dataBuffer.end()-1)->bbMatches = bbBestMatches;
-
-            cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
+            
+            fPrint = false;
+            if (fPrint)
+            {
+                std::cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << std::endl;
+            }
+            fPrint = false;
 
 
             /* COMPUTE TTC ON OBJECT IN FRONT */
@@ -312,6 +356,16 @@ int main(int argc, const char *argv[])
                         cv::waitKey(0);
                     }
                     bVis = false;
+
+                    // to view top view of lidar data
+                    bVis = true;
+                    if (bVis)
+                    {
+                        // cv::Size(4.0, 20.0), cv::Size(2000, 2000)
+                        showLidarTopview(currBB->lidarPoints, cv::Size(10.0, 25.0), cv::Size(1000, 2000), false);
+                    }
+                    bVis = false;
+
 
                 } // eof TTC computation
             } // eof loop over all BB matches            

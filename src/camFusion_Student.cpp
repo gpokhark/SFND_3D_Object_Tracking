@@ -2,8 +2,12 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
+#include <set>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+
+#include <pcl/kdtree/kdtree.h>
+#include <pcl/segmentation/extract_clusters.h>
 
 #include "camFusion.hpp"
 #include "dataStructures.h"
@@ -140,10 +144,76 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
     // ...
 }
 
+pcl::PointCloud<pcl::PointXYZ>::Ptr removeLidarOutlier(const std::vector<LidarPoint> &lidarPoints, float clusterTolerance)
+{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    for (const auto &p : lidarPoints)
+    {
+        cloud->push_back(pcl::PointXYZ((float)p.x, (float)p.y, (float)p.z));
+    }
+
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+    tree->setInputCloud(cloud);
+
+    pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+    ec.setClusterTolerance(clusterTolerance);
+    ec.setSearchMethod(tree);
+    ec.setMinClusterSize(3);
+    ec.setInputCloud(cloud);
+    std::vector<pcl::PointIndices> cluster_indices;
+    ec.extract(cluster_indices);
+
+    if (cluster_indices.empty())
+        return pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr result(new pcl::PointCloud<pcl::PointXYZ>);
+    for (const auto &cluster : cluster_indices)
+        for (size_t idx : cluster.indices)
+            result->points.push_back(cloud->points.at(idx));
+    return result;
+}
+
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
                      std::vector<LidarPoint> &lidarPointsCurr, double frameRate, double &TTC)
 {
-    // ...
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+    double laneWidth = 4.0;    // assmed width of ego lane
+    float clusterTolerance = 0.1;
+
+    // find closest distance to Lidar points within ego lane
+    double minXPrev = 1e9, minXCurr = 1e9;
+
+    // Apply euclidean clustering to remove outliers
+    auto clusteredPrevPts = removeLidarOutlier(lidarPointsPrev, clusterTolerance);
+    auto clusteredCurrPts = removeLidarOutlier(lidarPointsCurr, clusterTolerance);
+
+    // find closest distance to Lidar points within ego lane
+    for (auto &it : clusteredPrevPts->points)
+    {
+        if (fabs(it.y) <= laneWidth / 2.0)
+        {
+            minXPrev = minXPrev > it.x ? it.x : minXPrev;
+        }
+    }
+
+    for (auto &it : clusteredCurrPts->points)
+    {
+        if (fabs(it.y) <= laneWidth / 2.0)
+        {
+            minXCurr = minXCurr > it.x ? it.x : minXCurr;
+        }
+    }
+
+    // compute TTC from both measurements
+    TTC = minXCurr * dT / (minXPrev - minXCurr);
+
+    bool fPrint = true;
+    if (fPrint)
+    {
+        std::cout << "Lidar TTC = " << TTC << "s.\n";
+    }
+    fPrint = false;
 }
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame, DataFrame &currFrame)
@@ -179,7 +249,13 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
         auto bestMatch = std::max_element(m.begin(), m.end(), [](const std::pair<int, int> &p1, const std::pair<int, int> &p2) { return p1.second < p2.second; });
 
         bbBestMatches[prevBox.boxID] = bestMatch->first;
-        std::cout << "ID Matching: " << prevBox.boxID << " => " << bestMatch->first << "\n";
+
+        bool fPrint = false;
+        if (fPrint)
+        {
+            std::cout << "ID Matching: " << prevBox.boxID << " => " << bestMatch->first << "\n";
+        }
+        fPrint = false;
 
     } // eof iterating all previous bounding boxes
 }
