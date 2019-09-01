@@ -158,7 +158,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr removeLidarOutlier(const std::vector<LidarPo
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
     ec.setClusterTolerance(clusterTolerance);
     ec.setSearchMethod(tree);
-    ec.setMinClusterSize(3);
+    ec.setMinClusterSize(50);
     ec.setInputCloud(cloud);
     std::vector<pcl::PointIndices> cluster_indices;
     ec.extract(cluster_indices);
@@ -179,7 +179,7 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
     // auxiliary variables
     double dT = 1 / frameRate; // time between two measurements in seconds
     double laneWidth = 4.0;    // assmed width of ego lane
-    float clusterTolerance = 0.1;
+    float clusterTolerance = 0.05;
 
     // find closest distance to Lidar points within ego lane
     double minXPrev = 1e9, minXCurr = 1e9;
