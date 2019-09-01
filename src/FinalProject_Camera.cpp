@@ -35,8 +35,8 @@ int main(int argc, const char *argv[])
     string imgPrefix = "KITTI/2011_09_26/image_02/data/000000"; // left camera, color
     string imgFileType = ".png";
     int imgStartIndex = 0; // first file index to load (assumes Lidar and camera names have identical naming convention)
-    int imgEndIndex = 18;   // last file index to load
-    int imgStepWidth = 1; 
+    int imgEndIndex = 30;   // last file index to load
+    int imgStepWidth = 2; 
     int imgFillWidth = 4;  // no. of digits which make up the file index (e.g. img-0001.png)
 
     // object detection
@@ -79,7 +79,7 @@ int main(int argc, const char *argv[])
 
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex+=imgStepWidth)
     {
-        fPrint = false;
+        fPrint = true;
         if (fPrint)
         {
             std::cout << " Image Frame = " << imgIndex << ".\n";
@@ -153,7 +153,7 @@ int main(int argc, const char *argv[])
         bVis = true;
         if(bVis)
         {
-            show3DObjects((dataBuffer.end()-1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(2000, 2000), true);
+            show3DObjects((dataBuffer.end()-1)->boundingBoxes, cv::Size(10.0, 20.0), cv::Size(1280, 720), true);
         }
         bVis = false;
 
@@ -358,7 +358,7 @@ int main(int argc, const char *argv[])
                     bVis = false;
 
                     // to view top view of lidar data
-                    bVis = true;
+                    bVis = false;
                     if (bVis)
                     {
                         // cv::Size(4.0, 20.0), cv::Size(2000, 2000)

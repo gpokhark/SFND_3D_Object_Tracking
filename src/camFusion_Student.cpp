@@ -66,13 +66,15 @@ void clusterLidarWithROI(std::vector<BoundingBox> &boundingBoxes, std::vector<Li
 void show3DObjects(std::vector<BoundingBox> &boundingBoxes, cv::Size worldSize, cv::Size imageSize, bool bWait)
 {
     // create topview image
-    cv::Mat topviewImg(imageSize, CV_8UC3, cv::Scalar(255, 255, 255));
-
+    cv::Mat topviewImg(imageSize, CV_8UC3, cv::Scalar(0, 0, 0));
+    // create constant RED (BGR) color for Lidar points
+    cv::Scalar currColor = cv::Scalar(0, 0, 255);
     for (auto it1 = boundingBoxes.begin(); it1 != boundingBoxes.end(); ++it1)
     {
         // create randomized color for current 3D object
         cv::RNG rng(it1->boxID);
-        cv::Scalar currColor = cv::Scalar(rng.uniform(0, 150), rng.uniform(0, 150), rng.uniform(0, 150));
+        // Use next line to generate random new colors
+        // cv::Scalar currColor = cv::Scalar(rng.uniform(0, 150), rng.uniform(0, 150), rng.uniform(0, 150));
 
         // plot Lidar points into top view image
         int top = 1e8, left = 1e8, bottom = 0.0, right = 0.0;
