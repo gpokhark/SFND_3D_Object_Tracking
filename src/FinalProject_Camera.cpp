@@ -81,10 +81,10 @@ int main(int argc, const char *argv[])
     std::vector<double> ttcCameraVec; // vector  to store TTC Camera for each frame
 
     // SHITOMASI, HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
-    std::string detectorType = "FAST";
+    std::string detectorType = "SHITOMASI";
 
     // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
-    std::string descriptorType = "ORB";
+    std::string descriptorType = "BRISK";
 
     // DES_BINARY, DES_HOG
     std::string descriptorType_HOG_BIN = "DES_BINARY";
@@ -122,7 +122,7 @@ int main(int argc, const char *argv[])
         fPrint = false;
 
         /* DETECT & CLASSIFY OBJECTS */
-        bVis = true;
+        bVis = false;
         float confThreshold = 0.2;
         float nmsThreshold = 0.4;
         detectObjects((dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->boundingBoxes, confThreshold, nmsThreshold,
@@ -162,10 +162,10 @@ int main(int argc, const char *argv[])
         clusterLidarWithROI((dataBuffer.end() - 1)->boundingBoxes, (dataBuffer.end() - 1)->lidarPoints, shrinkFactor, P_rect_00, R_rect_00, RT);
 
         // Visualize 3D objects
-        bVis = true;
+        bVis = false;
         if (bVis)
         {
-            show3DObjects((dataBuffer.end() - 1)->boundingBoxes, cv::Size(10.0, 20.0), cv::Size(1280, 720), true);
+            show3DObjects((dataBuffer.end() - 1)->boundingBoxes, cv::Size(10.0, 20.0), cv::Size(1280, 720), false);
         }
         bVis = false;
 
@@ -187,7 +187,7 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        // string detectorType = "FAST"; // Line 82
+        // string detectorType = "SHITOMASI"; // Line 82
 
         double timeDetect = 0;
 
@@ -233,7 +233,7 @@ int main(int argc, const char *argv[])
 
         cv::Mat descriptors;
         // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
-        // string descriptorType = "ORB"; // Line 85
+        // string descriptorType = "BRISK"; // Line 85
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
 
         // push descriptors for current frame to end of data buffer
@@ -350,7 +350,7 @@ int main(int argc, const char *argv[])
                     ttcCameraVec.push_back(ttcCamera);
                     //// EOF STUDENT ASSIGNMENT
 
-                    bVis = true;
+                    bVis = false;
                     if (bVis)
                     {
                         cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
@@ -365,7 +365,7 @@ int main(int argc, const char *argv[])
                         cv::namedWindow(windowName, 4);
                         cv::imshow(windowName, visImg);
                         // cout << "Press key to continue to next frame" << endl;
-                        cv::waitKey(0);
+                        // cv::waitKey(0);
                     }
                     bVis = false;
 
