@@ -110,11 +110,14 @@ This creates a `output/output.md` file.
 I used KNN match selection (k=2) and performed descriptor distance ratio filtering with t=0.8 in file `matching2D.cpp`
 
 I have already [benchmarked](https://github.com/gpokhark/SFND_2D_Feature_Matching) the efficiency of the various combination of detector and descriptor pair. The top 3 detector/ descriptor pairs are as follows:
+
+
 |Sr. No. | Detector + Descriptor |Total Keypoints |Total Matches |Total Time (ms) |Ratio (matches/time) |
 |:---:|:---:|:----:|:-----:|:-----:|:-----:|
 |1 | FAST + ORB |17874 |4254 |20.8537 |203.993 |
 |2 | FAST + BRIEF |17874 |4904 |28.2515 |173.584 |
 |3 | FAST + BRISK |17874 |3170 |65.9564 |48.0621 |
+
 
 Comparison plots for TTC using lidar and camera using various combination of detector descriptor pairs can has been plotted here [benchmark plots](./output.md).
 
